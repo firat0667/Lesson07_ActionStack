@@ -34,7 +34,12 @@ namespace Game.Battlescape
        {
             base.OnUpdate();
        }
-       public override void OnEnd() { }
+        public override void OnEnd()
+        {
+            base.OnEnd();
+            Destroy(this); 
+        }
+
 
         IEnumerator MoveRoutine()
         {

@@ -14,7 +14,7 @@ namespace Game.Battlescape
     {
         private Battlescape.Node    m_node;
         private int                 m_iRemainingActionPoints;
-
+        public Team Team { get; private set; }
         private TeamType m_teamType;
 
         #region Properties
@@ -56,6 +56,7 @@ namespace Game.Battlescape
             // get closest node to unit
             m_node = GraphAlgorithms.GetClosestNode<Battlescape.Node>(Battlescape.Instance, transform.position);
             m_currentHealth = m_maxHealth;
+            Team = GetComponentInParent<Team>();
         }
 
         public void OnNewTurn()

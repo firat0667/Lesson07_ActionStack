@@ -25,7 +25,7 @@ namespace Game.Battlescape
             Unit closestPlayer = null;
             float closestDistance = float.MaxValue;
 
-            
+         
             foreach (Unit possibleTarget in UnitManager.Instance.GetEnemiesOf(m_unit))
             {
                 float dist = Vector3.Distance(m_unit.transform.position, possibleTarget.transform.position);
@@ -46,23 +46,20 @@ namespace Game.Battlescape
             
             if (closestDistance < 1.5f)
             {
-                Debug.Log($"{m_unit.name} attacks {closestPlayer.name}!");
-                if (closestPlayer is IDamageable damageable)
-                {
-                    damageable.TakeDamage(1);
-                }
+                UnitAttackAction attack = m_unit.gameObject.AddComponent<UnitAttackAction>();
+                attack.Init(m_unit, closestPlayer);
+                ActionStack.Main.PushAction(attack);
                 m_unit.RemainingActionPoints = 0;
                 m_isDone = true;
                 return;
             }
 
-            
+           
             Battlescape.Node targetNode = GraphAlgorithms.GetClosestNode<Battlescape.Node>(
                 Battlescape.Instance,
                 closestPlayer.transform.position
             );
 
-            
             List<Battlescape.Node> path = GraphAlgorithms.FindShortestPath_AStar(
                 Battlescape.Instance,
                 m_unit.Node,
@@ -71,18 +68,26 @@ namespace Game.Battlescape
 
             if (path != null && path.Count > 1)
             {
-                Battlescape.Node moveTarget = path[1];
-
-                
-                if (UnitManager.Instance.IsNodeOccupied(moveTarget))
+              
+                Battlescape.Node moveTarget = null;
+                for (int i = 1; i < path.Count; i++)
                 {
-                    Debug.Log($"{m_unit.name} hedef node dolu, hareket iptal!");
-                    m_isDone = true;
-                    return;
+                    if (!UnitManager.Instance.IsNodeOccupied(path[i]))
+                    {
+                        moveTarget = path[i];
+                        break;
+                    }
                 }
 
-               
-                m_unit.StartCoroutine(DelayedMove(moveTarget));
+                if (moveTarget != null)
+                {
+                    m_unit.StartCoroutine(DelayedMove(moveTarget));
+                }
+                else
+                {
+                    Debug.Log($"{m_unit.name} path üzerindeki tüm node'lar dolu, hareket iptal!");
+                    m_isDone = true;
+                }
             }
             else
             {
@@ -91,18 +96,15 @@ namespace Game.Battlescape
             }
         }
 
-
-        IEnumerator DelayedMove(Battlescape.Node target)
+        private IEnumerator DelayedMove(Battlescape.Node target)
         {
             yield return new WaitForSeconds(0.3f);
-
-            UnitMoveAction move = null;
 
             if (target != null)
             {
                 yield return new WaitUntil(() => ActionStack.Main.IsEmpty || ActionStack.Main.CurrentAction == this);
 
-                move = m_unit.gameObject.AddComponent<UnitMoveAction>();
+                UnitMoveAction move = m_unit.gameObject.AddComponent<UnitMoveAction>();
                 move.Init(m_unit, target);
                 ActionStack.Main.PushAction(move);
                 m_unit.RemainingActionPoints = 0;
@@ -112,8 +114,6 @@ namespace Game.Battlescape
 
             m_isDone = true;
         }
-
-
 
         public override bool IsDone() => m_isDone;
     }
