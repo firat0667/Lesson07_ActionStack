@@ -25,6 +25,7 @@ namespace Game.Battlescape
             Unit closestPlayer = null;
             float closestDistance = float.MaxValue;
 
+            
             foreach (Unit possibleTarget in UnitManager.Instance.GetEnemiesOf(m_unit))
             {
                 float dist = Vector3.Distance(m_unit.transform.position, possibleTarget.transform.position);
@@ -42,6 +43,7 @@ namespace Game.Battlescape
                 return;
             }
 
+            
             if (closestDistance < 1.5f)
             {
                 Debug.Log($"{m_unit.name} attacks {closestPlayer.name}!");
@@ -60,6 +62,7 @@ namespace Game.Battlescape
                 closestPlayer.transform.position
             );
 
+            
             List<Battlescape.Node> path = GraphAlgorithms.FindShortestPath_AStar(
                 Battlescape.Instance,
                 m_unit.Node,
@@ -69,6 +72,16 @@ namespace Game.Battlescape
             if (path != null && path.Count > 1)
             {
                 Battlescape.Node moveTarget = path[1];
+
+                
+                if (UnitManager.Instance.IsNodeOccupied(moveTarget))
+                {
+                    Debug.Log($"{m_unit.name} hedef node dolu, hareket iptal!");
+                    m_isDone = true;
+                    return;
+                }
+
+               
                 m_unit.StartCoroutine(DelayedMove(moveTarget));
             }
             else
@@ -77,6 +90,7 @@ namespace Game.Battlescape
                 m_isDone = true;
             }
         }
+
 
         IEnumerator DelayedMove(Battlescape.Node target)
         {

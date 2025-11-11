@@ -42,5 +42,16 @@ namespace Game.Manager
                     yield return u;
             }
         }
+        public bool IsNodeOccupied(Battlescape.Battlescape.Node node)
+        {
+            foreach (var unit in m_allUnits)
+            {
+                if (unit == null) continue;
+                if (unit.Node == node)
+                    return true;
+            }
+            return false;
+        }
+
     }
 }
