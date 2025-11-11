@@ -361,7 +361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786e98e4ccec6864aa4f400648c6f980, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TeamType: 1
+  m_teamType: 1
 --- !u!1 &169789791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1084,7 +1084,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786e98e4ccec6864aa4f400648c6f980, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TeamType: 0
+  m_teamType: 0
 --- !u!33 &4904356443147719053
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1128,6 +1128,6 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 34159438}
   - {fileID: 1667730278}
+  - {fileID: 34159438}
   - {fileID: 1394122025}

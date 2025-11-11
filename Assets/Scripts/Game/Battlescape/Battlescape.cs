@@ -36,6 +36,8 @@ namespace Game.Battlescape
         {
             get
             {
+                if (m_nodes == null)
+                    yield break;
                 for (int z = 0; z < SIZE; z++)
                 {
                     for (int x = 0; x < SIZE; x++)

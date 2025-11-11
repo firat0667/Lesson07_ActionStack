@@ -21,6 +21,7 @@ namespace Game.Manager
         {
             if (!m_allUnits.Contains(unit))
                 m_allUnits.Add(unit);
+            Debug.Log($"Unit registered: {unit.name}. Total units: {m_allUnits.Count},unit Type: {unit.TeamType}");
         }
 
         public void Unregister(Unit unit)
@@ -37,11 +38,9 @@ namespace Game.Manager
             {
                 if (u == null) continue;
 
-                //if (u.TeamType != self.TeamType)
-                //    yield return u;
+                if (u.TeamType != self.TeamType)
+                    yield return u;
             }
         }
-
-
     }
 }

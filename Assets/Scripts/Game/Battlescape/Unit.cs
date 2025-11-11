@@ -1,5 +1,6 @@
 
 using Actions;
+using Game.Manager;
 using Graphs;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,10 +8,13 @@ using UnityEngine;
 
 namespace Game.Battlescape
 {
+    public enum TeamType { Player, Enemy }
     public class Unit : ActionStack.ActionBehavior
     {
         private Battlescape.Node    m_node;
         private int                 m_iRemainingActionPoints;
+
+        private TeamType m_teamType; 
 
         #region Properties
 
@@ -18,6 +22,11 @@ namespace Game.Battlescape
         {
             get => m_iRemainingActionPoints;
             set => m_iRemainingActionPoints = Mathf.Max(value, 0);
+        }
+        public TeamType TeamType
+        {
+            get=> m_teamType;
+            set=> m_teamType = value;
         }
 
         public Battlescape.Node Node
@@ -53,7 +62,14 @@ namespace Game.Battlescape
             // do an input action
             if (bFirstTime)
             {
-                ActionStack.Main.PushAction(new PlayerInputAction(this));
+                if (m_teamType == TeamType.Enemy)
+                {
+                    ActionStack.Main.PushAction(new EnemyAIAction(this));
+                }
+                else
+                {
+                    ActionStack.Main.PushAction(new PlayerInputAction(this));
+                }
             }
 
             /*
@@ -75,6 +91,15 @@ namespace Game.Battlescape
         public override string ToString()
         {
             return "Unit: " + name;
+        }
+
+        private void OnEnable()
+        {
+            UnitManager.Instance?.Register(this);
+        }
+        private void OnDisable()
+        {
+            UnitManager.Instance?.Unregister(this);
         }
     }
 }

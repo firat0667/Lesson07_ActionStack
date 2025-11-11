@@ -18,6 +18,7 @@ namespace Game.Battlescape
         public override void OnBegin(bool bFirstTime)
         {
             base.OnBegin(bFirstTime);
+
             Unit closestPlayer = null;
             float closestDistance = float.MaxValue;
 
@@ -30,48 +31,68 @@ namespace Game.Battlescape
                     closestPlayer = possibleTarget;
                 }
             }
+
             if (closestPlayer == null)
             {
                 Debug.LogWarning("EnemyAIAction: No closest player found.");
-                m_isDone = true; return;
+                m_isDone = true;
+                return;
             }
-            // get closest node to player
-            Battlescape.Node targetNode = GraphAlgorithms.GetClosestNode<Battlescape.Node>(Battlescape.Instance, closestPlayer.transform.position);
 
-            // pick a closer node to move to
-            Battlescape.Node moveTarget = null;
-            float minDistance = float.MaxValue;
-            // look at all linked nodes
-            foreach (ILink link in m_unit.Node.Links)
+            // hedef çok yakýnsa saldýr
+            if (closestDistance < 1.5f)
             {
-                Battlescape.Node linkedNode = link.Target as Battlescape.Node;
-                float dist = Vector3.Distance(linkedNode.WorldPosition, targetNode.WorldPosition);
-                if (dist < minDistance)
-                {
-                    minDistance = dist;
-                    moveTarget = linkedNode;
-                }
+                Debug.Log("Enemy attacks the player!");
+                m_isDone = true;
+                return;
             }
-            // start moving actions
-            m_unit.StartCoroutine(DelayedMove(moveTarget));
+
+            // get closest node to player
+            Battlescape.Node targetNode = GraphAlgorithms.GetClosestNode<Battlescape.Node>(
+                Battlescape.Instance,
+                closestPlayer.transform.position
+            );
+
+            // get shortest path to target
+            List<Battlescape.Node> path = GraphAlgorithms.FindShortestPath_AStar(
+                Battlescape.Instance,
+                m_unit.Node,
+                targetNode
+            );
+
+            // move to next step in path (not directly to target)
+            if (path != null && path.Count > 1)
+            {
+                Battlescape.Node moveTarget = path[1];
+                m_unit.StartCoroutine(DelayedMove(moveTarget));
+            }
+            else
+            {
+                Debug.LogWarning("EnemyAIAction: No valid path found.");
+                m_isDone = true;
+            }
         }
+
         IEnumerator DelayedMove(Battlescape.Node target)
         {
             yield return new WaitForSeconds(0.3f);
 
-            UnitMoveAction move = null; 
+            UnitMoveAction move = null;
 
             if (target != null)
             {
+                yield return new WaitUntil(() => ActionStack.Main.IsEmpty || ActionStack.Main.CurrentAction == this);
+
                 move = m_unit.gameObject.AddComponent<UnitMoveAction>();
                 move.Init(m_unit, target);
                 ActionStack.Main.PushAction(move);
                 m_unit.RemainingActionPoints = 0;
-            }
-            if (move != null)
                 yield return new WaitUntil(() => move.IsDone());
+            }
 
-            m_isDone = true;
+            m_isDone = true; 
+
+
         }
 
 

@@ -18,8 +18,9 @@ namespace Game.Battlescape
         }
         public override bool IsDone()
         {
-          return true;
+            return m_bIsDone;
         }
+
         public override void OnBegin(bool bFirstTime)
         {
             base.OnBegin(bFirstTime);
@@ -35,8 +36,8 @@ namespace Game.Battlescape
        }
        public override void OnEnd() { }
 
-       IEnumerator MoveRoutine()
-       {
+        IEnumerator MoveRoutine()
+        {
             Vector3 start = transform.position;
             Vector3 end = m_targetTile.WorldPosition;
             float t = 0;
@@ -47,8 +48,10 @@ namespace Game.Battlescape
                 yield return null;
             }
             transform.position = end;
+            m_unit.Node = m_targetTile;
             m_bIsDone = true;
-       }
+        }
+
     }
 }
 
