@@ -1,5 +1,6 @@
-using Actions;
+ï»¿using Actions;
 using Game.Manager;
+using Game.Combat;
 using Graphs;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,10 +12,12 @@ namespace Game.Battlescape
     {
         private Unit m_unit;
         private bool m_isDone = false;
+
         public EnemyAIAction(Unit unit)
         {
             m_unit = unit;
         }
+
         public override void OnBegin(bool bFirstTime)
         {
             base.OnBegin(bFirstTime);
@@ -39,28 +42,30 @@ namespace Game.Battlescape
                 return;
             }
 
-            // hedef çok yakýnsa saldýr
             if (closestDistance < 1.5f)
             {
-                Debug.Log("Enemy attacks the player!");
+                Debug.Log($"{m_unit.name} attacks {closestPlayer.name}!");
+                if (closestPlayer is IDamageable damageable)
+                {
+                    damageable.TakeDamage(1);
+                }
+                m_unit.RemainingActionPoints = 0;
                 m_isDone = true;
                 return;
             }
 
-            // get closest node to player
+            
             Battlescape.Node targetNode = GraphAlgorithms.GetClosestNode<Battlescape.Node>(
                 Battlescape.Instance,
                 closestPlayer.transform.position
             );
 
-            // get shortest path to target
             List<Battlescape.Node> path = GraphAlgorithms.FindShortestPath_AStar(
                 Battlescape.Instance,
                 m_unit.Node,
                 targetNode
             );
 
-            // move to next step in path (not directly to target)
             if (path != null && path.Count > 1)
             {
                 Battlescape.Node moveTarget = path[1];
@@ -87,13 +92,13 @@ namespace Game.Battlescape
                 move.Init(m_unit, target);
                 ActionStack.Main.PushAction(move);
                 m_unit.RemainingActionPoints = 0;
+
                 yield return new WaitUntil(() => move.IsDone());
             }
 
-            m_isDone = true; 
-
-
+            m_isDone = true;
         }
+
 
 
         public override bool IsDone() => m_isDone;

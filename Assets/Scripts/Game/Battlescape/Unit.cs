@@ -1,6 +1,7 @@
 
 using Actions;
 using Game.Manager;
+using Game.Combat;
 using Graphs;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,14 +10,17 @@ using UnityEngine;
 namespace Game.Battlescape
 {
     public enum TeamType { Player, Enemy }
-    public class Unit : ActionStack.ActionBehavior
+    public class Unit : ActionStack.ActionBehavior,IDamageable
     {
         private Battlescape.Node    m_node;
         private int                 m_iRemainingActionPoints;
 
-        private TeamType m_teamType; 
+        private TeamType m_teamType;
 
         #region Properties
+
+        private int m_maxHealth = 2;
+        private int m_currentHealth;
 
         public int RemainingActionPoints
         {
@@ -42,12 +46,16 @@ namespace Game.Battlescape
             }
         }
 
+        public int MaxHealth => m_maxHealth;
+        public int CurrentHealth => m_currentHealth;
+
         #endregion
 
         public void InitializeUnit()
         {
             // get closest node to unit
             m_node = GraphAlgorithms.GetClosestNode<Battlescape.Node>(Battlescape.Instance, transform.position);
+            m_currentHealth = m_maxHealth;
         }
 
         public void OnNewTurn()
@@ -100,6 +108,24 @@ namespace Game.Battlescape
         private void OnDisable()
         {
             UnitManager.Instance?.Unregister(this);
+        }
+
+        public void TakeDamage(int amount)
+        {
+            m_currentHealth -= amount;
+            Debug.Log($"{name} took {amount} damage! ({m_currentHealth}/{m_maxHealth})");
+
+            if (m_currentHealth <= 0)
+            {
+                OnDeath();
+            }
+        }
+
+        public void OnDeath()
+        {
+            Debug.Log($"{name} has died!");
+            UnitManager.Instance?.Unregister(this);
+            Destroy(gameObject);
         }
     }
 }
